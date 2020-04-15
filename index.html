@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>HanoiTower</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+</head>
+<style>
+    .container {
+        border: 1px solid black;
+        position: relative;
+    }
+
+    .disk {
+        position: absolute;
+        z-index: 1;
+        transition: 1s;
+    }
+
+    .stick {
+        position: absolute;
+        background-color: black;
+        width: 4px;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div id="s1" class="stick"></div>
+        <div id="s2" class="stick"></div>
+        <div id="s3" class="stick"></div>
+    </div>
+</body>
+<script>
+    const diskNum = 20;  //盤子數
+    const diskWidthInterval = 40;  //盤子寬度間隔(px)
+    const diskHeight = 30;  //盤子高度(px)
+    const diskColors = ["#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5", "#2196F3", "#03A9F4", "#00BCD4", "#009688", "#4CAF50"];
+
+    var stickWidth = 0;  //擺放盤子的柱子寬度(隨盤子數增加)
+    var stickHeight = 0;
+    var stickX = new Array();  //柱子中心在水平軸位置
+    var records = new Array();  //紀錄移動軌跡
+    var intervalID;
+    var recordIndex = 0;
+    var stickArr = [new Array(), new Array(), new Array()];
+
+    $(function () {
+        hanoiTower(diskNum, 0, 1, 2);
+
+        animationMove();
+    })
+
+    function hanoiTower(num, start, temp, end) {
+        if (num >= 1) {
+            hanoiTower(num - 1, start, end, temp);
+
+            //搬移盤子
+            //console.log("disk" + num + " from " + start + " to " + end);
+            records.push({
+                num: num,
+                start: start,
+                end: end
+            });
+            hanoiTower(num - 1, temp, start, end);
+        }
+    }
+
+    //動畫移動
+    function animationMove() {
+        initDisk();
+
+        //開始動畫
+        //每3秒執行一次(動作有上、左右、下各一秒)
+        intervalID = setInterval(function(){
+            moveStep();
+        }, 3100);
+    }
+
+    function moveStep(){
+        if(recordIndex == records.length){
+            clearInterval(intervalID);
+            console.log(stickArr);
+            return;
+        }
+
+        var record = records[recordIndex];
+        console.log(record);
+
+        //設定位置資料
+        var pop = stickArr[record.start].pop();
+        stickArr[record.end].push(pop);
+
+        //3秒鐘完成動畫
+        var disk = $("#disk" + record.num);
+        //var startX = $("#disk" + stickX(records[recordIndex].start));
+        var endX = stickX[record.end];
+
+        $(disk).css('top', 0);
+
+        setTimeout(function(){
+            $(disk).css('left', endX - $(disk).width() / 2);  //左右移動
+        }, 1000);
+
+        setTimeout(function(){
+            //上下放置
+            console.log(stickArr);
+
+            var index = stickArr[record.end].indexOf(record.num);  //盤子在柱子上的位置
+            $(disk).css('top', $(".container").height() - (diskHeight * (index + 1)));
+        }, 2000);
+
+        recordIndex++;
+    }
+
+    //初始化盤子
+    function initDisk() {
+        //設定資料(後端)
+        for(var i = diskNum;i > 0;i--){
+            stickArr[0].push(i);
+        }
+
+        //產生盤子(前端)
+        for(var i = 1;i <= diskNum;i++){
+            $(".container").append($("<div></div>").attr('id', "disk" + i)
+            .css('background-color', diskColors[(i - 1) % 10])
+            .css('height', diskHeight)
+            .css('width', (1 + i) * diskWidthInterval)
+            .css('position', 'absolute').css('transition', '1s'));
+        }
+
+        var stickWidth = (diskNum + 3) * diskWidthInterval;
+        var containerWidth = stickWidth * 3;
+        var containerHeight = (diskNum + 3) * diskHeight;
+
+        //設定容器
+        $('.container').css('width', containerWidth + 'px');
+        $('.container').css('height', containerHeight + 'px');
+
+        //設定柱子
+        for (var i = 1; i <= 3; i++) {
+            //垂直擺放
+            $("#s" + i).css('height', (containerHeight - diskHeight * 2));
+            $("#s" + i).css('top', (diskHeight) * 2);
+
+            //水平擺放
+            // var xScale = (diskWidthInterval * 2.5 - 2) + ((i - 1) * stickWidth);  //相對位置 + 平移
+            var xScale = stickWidth / 2 + ((i - 1) * stickWidth);
+            $("#s" + i).css('left', xScale + 'px');
+            stickX.push(xScale);
+        }
+
+        //將盤子疊好
+        // console.log("each stick X-Scale: " + stickX);
+        for (var j = diskNum; j > 0; j--) {
+            var disk = $("#disk" + j);
+            $(disk).css('left', stickX[0] - ($(disk).width() / 2) + 'px');
+            $(disk).css('top', (j + 2) * diskHeight);
+        }
+    }
+</script>
+
+</html>
