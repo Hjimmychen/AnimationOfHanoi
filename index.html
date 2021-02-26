@@ -33,7 +33,7 @@
     </div>
 </body>
 <script>
-    const diskNum = 20;  //盤子數
+    const diskNum = 15;  //盤子數
     const diskWidthInterval = 40;  //盤子寬度間隔(px)
     const diskHeight = 30;  //盤子高度(px)
     const diskColors = ["#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5", "#2196F3", "#03A9F4", "#00BCD4", "#009688", "#4CAF50"];
@@ -94,7 +94,6 @@
 
         //3秒鐘完成動畫
         var disk = $("#disk" + record.num);
-        //var startX = $("#disk" + stickX(records[recordIndex].start));
         var endX = stickX[record.end];
 
         $(disk).css('top', 0);
@@ -116,12 +115,12 @@
 
     //初始化盤子
     function initDisk() {
-        //設定資料(後端)
+        //設定資料陣列
         for(var i = diskNum;i > 0;i--){
             stickArr[0].push(i);
         }
 
-        //產生盤子(前端)
+        //產生盤子圖案
         for(var i = 1;i <= diskNum;i++){
             $(".container").append($("<div></div>").attr('id', "disk" + i)
             .css('background-color', diskColors[(i - 1) % 10])
@@ -152,7 +151,6 @@
         }
 
         //將盤子疊好
-        // console.log("each stick X-Scale: " + stickX);
         for (var j = diskNum; j > 0; j--) {
             var disk = $("#disk" + j);
             $(disk).css('left', stickX[0] - ($(disk).width() / 2) + 'px');
